@@ -10,7 +10,7 @@ row2 = {'Mid Left':' ', 'Space1T':'|', 'Mid Middle':' ', 'Space2T':'|','Mid Righ
 row3 = {'Bottom Left':' ', 'Space1T':'|', 'Bottom Middle':' ', 'Space2T':'|','Bottom Right':' '}
 
 rows = [row1,row2,row3]
-player = 'x'
+player = 'X'
 game_over = False
 turns = 0
 
@@ -62,22 +62,22 @@ def check_key():
     return user_choice
         
 def add_move(position):
-    if player == 'x':
+    if player == 'X':
         for row in rows:
             if position in row:
                 row[position] = 'X'
-    elif player == 'o':
+    elif player == 'O':
         for row in rows:
             if position in row:
                 row[position] = 'O'  
 
 def swap_player(player):
     #This alternates the placement of X and O between players
-    if player == 'x':
-        player = 'o' 
+    if player == 'X':
+        player = 'O' 
         return player
-    elif player == 'o':
-        player = 'x'
+    elif player == 'O':
+        player = 'X'
         return player
 
 
@@ -89,11 +89,41 @@ def turn(player):
     return player
 
 
-def endgame():
-    condition = False
-    #while condition == False:
-       # pass # this will be the check for a wincon, and at the end it will set condition to true if it is met
-    return condition
+def endgame(): #takes player variable
+    game_over = False
+    nl ='\n'
+    while game_over == False:
+        #first check for horizontal
+        if rows[0]['Top Left'] == player and rows[0]['Top Middle'] == player and rows[0]['Top Right'] == player:
+            print(f'{nl}{player} wins!')
+            game_over = True
+        elif rows[1]['Mid Left'] == player and rows[1]['Mid Middle'] == player and rows[1]['Mid Right'] == player:
+            print(f'{nl}{player} wins!')
+            game_over = True
+        elif rows[2]['Bottom Left'] == player and rows[2]['Bottom Middle'] == player and rows[2]['Bottom Right'] == player:
+            print(f'{nl}{player} wins!')
+            game_over = True    
+        #starts check for vertical victory
+        elif rows[0]['Top Left'] == player and rows[1]['Mid Left'] == player and rows[2]['Bottom Left'] == player:
+            print(f'{nl}{player} wins!')
+            game_over = True
+        elif rows[0]['Top Middle'] == player and rows[1]['Mid Middle'] == player and rows[2]['Bottom Middle'] == player:
+            print(f'{nl}{player} wins!')
+            game_over = True
+        elif rows[0]['Top Right'] == player and rows[1]['Mid Right'] == player and rows[2]['Bottom Right'] == player:
+            print(f'{nl}{player} wins!')
+            game_over = True
+        #diagonal victories
+        elif rows[0]['Top Left'] == player and rows[1]['Mid Middle'] == player and rows[2]['Bottom Right'] == player:
+            print(f'{nl}{player} wins!')
+            game_over = True
+        elif rows[0]['Top Right'] == player and rows[1]['Mid Middle'] == player and rows[2]['Bottom Left'] == player:
+            print(f'{nl}{player} wins!')
+            game_over = True     
+        else:
+            #print('no') #for testing only
+            break
+    return game_over
 
 
 #The Game    
@@ -108,7 +138,6 @@ while game_over == False:
         the_end = endgame()
         if the_end == True:
             game_over = True
-            print('You Win!')
         elif the_end == False and turns < 9:
             turns +=1
             #print(str(turns)+'two') #for testing only
