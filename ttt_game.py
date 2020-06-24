@@ -196,7 +196,8 @@ def endgame(): #takes player variable
     '''
     This checks the possible game win conditions in order
     1) 3 in a row horizontally
-    2) 
+    2) 3 in a column vertically
+    3) Both diagonal victories
     
     This doesn't loop through the dicts, due to the spacers in the rows.
     This could be cleaned up by changing the board print and removing the
