@@ -85,7 +85,7 @@ def turn(player):
     position = check_key()
     add_move(position)
     the_board()
-    player = swap_player(player)
+    #player = swap_player(player)
     return player
 
 
@@ -133,6 +133,7 @@ while game_over == False:
     #if the number of turns is >4 check for the wincon
     if turns < 4:
         turns +=1
+        player = swap_player(player)
         #print(turns) #for testing only
     else:
         the_end = endgame()
@@ -140,6 +141,7 @@ while game_over == False:
             game_over = True
         elif the_end == False and turns < 9:
             turns +=1
+            player = swap_player(player)
             #print(str(turns)+'two') #for testing only
             if turns >= 9:
                 game_over = True
