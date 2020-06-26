@@ -1,0 +1,201 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Fri Jun 26 09:40:17 2020
+
+This is a non-interactive version of the game WAR.
+This is just to show the interplay of classes with
+object oriented programming.
+
+@author: bradl
+"""
+
+import random
+
+SUITS = ('Hearts', 'Diamonds', 'Spades', 'Clubs')
+RANKS = ('Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 
+         'Ten', 'Jack', 'Queen', 'King', 'Ace')
+VALUES = {'Two':2, 'Three':3, 'Four':4, 'Five':5, 'Six':6, 'Seven':7, 
+          'Eight':8, 'Nine':9, 'Ten':10, 'Jack':10, 'Queen':10, 'King':10,
+          'Ace':11}
+
+
+class Card:
+    '''
+    Creates a card with a suit and rank. The values are assigned
+    via the VALUES dictionary.
+    
+    STR method returns the suit and rank of the card.
+    
+    '''
+    
+    def __init__(self, suit, rank):
+        self.suit = suit
+        self.rank = rank
+        self.value = VALUES[rank]
+        
+        
+    def __str__(self):
+        return self.rank + " of " + self.suit
+    
+    
+class Deck():
+    
+    '''
+    This creates a deck of Card class objects. Each Card will have a suit
+    and rank.
+    '''
+    
+    def __init__(self):
+        
+        self.all_cards = []
+        
+        for suit in SUITS:
+            for rank in RANKS:
+                #create the card object
+                created_card = Card(suit, rank)
+                
+                self.all_cards.append(created_card)
+                
+    def shuffle(self):
+        '''
+        Changes the order of the items in the all_cards list)
+
+        Returns
+        -------
+        None.
+
+        '''
+        random.shuffle(self.all_cards)
+        
+        
+    def deal_one(self):
+        '''
+        Removes an element from the all_cards list, aka the Deck.
+
+        Returns
+        -------
+        Returns a string
+
+        '''
+        return self.all_cards.pop()    
+        
+       
+class Player():
+    '''
+    This creates a player class allowing for multiple players to hold
+    a 'hand' of cards.
+    '''
+    
+    def __init__(self, name):
+        
+        self.name = name
+        self.all_cards = []
+        
+    def remove_one(self):
+        '''
+        This removes a card from the 'hand'
+
+        Returns
+        -------
+        Returns STR
+
+        '''
+        return self.all_cards.pop(0)
+    
+    def add_cards(self, new_cards):
+        '''
+        This adds one or more cards to the players 'hand'
+
+        Parameters
+        ----------
+        new_cards : Type is STR
+
+        Returns
+        -------
+        None.
+
+        '''
+        
+        if type(new_cards) == type([]):
+            #if there are multiple cards added
+            self.all_cards.extend(new_cards)
+        else:
+            #if a single card is added
+            self.all_cards.append(new_cards)
+        
+        
+    def __str__(self):
+        return f"PLayer {self.name} has {len(self.all_cards)} cards."    
+    
+#game logic
+#setup        
+PLAYER_ONE = Player('One') #player one created
+PLAYER_TWO = Player('Two') #player two created
+
+#new deck created and shuffled
+NEW_DECK = Deck()
+NEW_DECK.shuffle()
+
+for x in range(26): #half the card dealt to each player
+    PLAYER_ONE.add_cards(NEW_DECK.deal_one())
+    PLAYER_TWO.add_cards(NEW_DECK.deal_one())
+
+
+GAME_ON = True
+
+ROUND_NUM = 0
+
+while GAME_ON:
+    ROUND_NUM += 1
+    print(f"Round {ROUND_NUM}: BEGIN!")
+    #could make this a function call if there is a player turn function
+    #checks at the start of each round if any players are out of cards
+    if len(PLAYER_ONE.all_cards) == 0:
+        print('Player One is out of cards. Player Two wins!')
+        GAME_ON = False
+        break
+    if len(PLAYER_TWO.all_cards) == 0:
+        print('Player Two is out of cards. Player One wins!')
+        GAME_ON = False
+        break
+
+    #each player ads one card to their cards in play
+    PLAYER_ONE_CARDS_IN_PLAY = []
+    PLAYER_ONE_CARDS_IN_PLAY.append(PLAYER_ONE.remove_one())          
+    PLAYER_TWO_CARDS_IN_PLAY = []
+    PLAYER_TWO_CARDS_IN_PLAY.append(PLAYER_TWO.remove_one())       
+          
+    AT_WAR = True
+    
+    while AT_WAR:       
+        #checks to see which value is higher
+        if PLAYER_ONE_CARDS_IN_PLAY[-1].value > PLAYER_TWO_CARDS_IN_PLAY[-1].value:
+
+            PLAYER_ONE.add_cards(PLAYER_ONE_CARDS_IN_PLAY)
+            PLAYER_ONE.add_cards(PLAYER_TWO_CARDS_IN_PLAY)
+            AT_WAR = False
+
+        elif PLAYER_TWO_CARDS_IN_PLAY[-1].value > PLAYER_ONE_CARDS_IN_PLAY[-1].value:
+
+            PLAYER_TWO.add_cards(PLAYER_ONE_CARDS_IN_PLAY)
+            PLAYER_TWO.add_cards(PLAYER_TWO_CARDS_IN_PLAY)
+            AT_WAR = False
+
+        else:
+            #War! Starts if the value of each card is equal
+            print('WARRRR!!!')
+            #checks to see if a player is unable to contribute to the war pile
+            if len(PLAYER_ONE.all_cards) < 3:
+                print('Player One unable to declare war')
+                print('Player Two Wins!')
+                GAME_ON = False
+                break
+            elif len(PLAYER_TWO.all_cards) < 3:
+                print('Player Two unable to declare war')
+                print('Player One wins!')
+                GAME_ON = False
+                break
+            else:
+                for num in range(3):
+                    PLAYER_ONE_CARDS_IN_PLAY.append(PLAYER_ONE.remove_one())
+                    PLAYER_TWO_CARDS_IN_PLAY.append(PLAYER_TWO.remove_one())
