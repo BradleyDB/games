@@ -82,6 +82,12 @@ class Deck():
 
 
 class Account():
+    '''
+    This holds the player/dealers money. Allows for deposits, withrawls
+    as well as the ability for a player to make a bet.
+    
+    '''
+    
     
     def __init__(self, balance):
         
@@ -96,12 +102,37 @@ class Account():
         return f"Account Balance: ${self.balance}"
     
     def deposit(self, new_amount):
+        '''
+        This allows for a deposit into the account.
+
+        Parameters
+        ----------
+        new_amount : Must be int type.
+
+        Returns
+        -------
+        None.
+
+        '''
         
-        self.balance  += new_amount
+        self.balance += new_amount
         
         print(f"Winnings Deposited. Added ${new_amount} to your balance. Your New Balance is: ${self.balance}")
     
     def withdraw(self, take_out):
+        '''
+        Function withdraws funds from the account balance.
+
+        Parameters
+        ----------
+        take_out : must be int type.
+
+        Returns
+        -------
+        bool
+            True if there were funds available and a withdrawl was made.
+
+        '''
         
         if self.balance > take_out:
             
@@ -113,7 +144,7 @@ class Account():
         
         else:
             
-            print('Funds Unavailable!') #some way to make this trigger end of game?
+            print('Funds Unavailable!') #some way to make this trigger end of GAME?
             
             return False
                     
@@ -124,6 +155,7 @@ class Player(Account):
     a 'hand' of cards. Inherets from 'account' base class.
     ''' 
     def __init__(self, name, balance):
+        Account.__init__(self, balance)
         self.balance = balance
         self.name = name
         
@@ -165,61 +197,101 @@ class Player(Account):
         '''
         This loops through the current player objects hand and provides the
         value of their cards.
+        Controls for ace value logic of high and low aces.
 
         Returns
         -------
         total : Returns int type.
 
         '''
-        total = 0
-        for card in self.cards_in_hand:
-            total += card.value
+        num_aces = 0
+        non_ace_total = 0
+        
+        for item in self.cards_in_hand:
+            if item.rank == RANKS[-1]:
+                num_aces += 1
+            else:
+                non_ace_total += item.value
+        
+        if num_aces > 0:
+            if non_ace_total + 11 + (num_aces - 1)*1 <= 21:
+                ace_value = 11 + (num_aces - 1)*1
+            else:
+                ace_value = num_aces*1
+        else:
+            ace_value = 0
+
+        total = non_ace_total + ace_value
+        
         return total
     
     def see_hand(self):
+        '''
+        Goes through the cards in a players hand and returns the card
+        name, suit and total value.
+
+        Returns
+        -------
+        STR
+
+        '''
+        
         
         print(f"{self.name}s Current Hand: ")
-        for card in self.cards_in_hand:
-            print (str(card), end = '\n')
+        for items in self.cards_in_hand:
+            print(str(items),end ='\n')
         return '\nTotal Hand Value: ' + str(self.hand_value()) + '\n'    
     
     def __str__(self):
+        '''
+        Looks at the players hand and balance.
+
+        Returns
+        -------
+        str
+            Hand and balance.
+
+        '''
         
         return f"{self.see_hand()} \nRemaining Balance: ${self.balance}."
-    
 
-    def ace_choice(self): #need to figure out how to get this to interact with the aces in hand, not for everyone
-        new_ace_value = 0
-        answer = 'wrong'
-        while answer == 'wrong':
-            try:
-                new_ace_value = int(input('Aces High or Low? Enter 1 or 11: '))
-            except ValueError:
-                print("Sorry, You need to enter a '1' or '11")
-            else:
-                if new_ace_value not in (1,11):
-                    print('Really? You have to pick a "1" or "11"') 
-                else:
-                    answer = 'right'
-                    break                                   
-        return new_ace_value
             
     def make_bet(self):
+        '''
+        This takes a user input asking what their bet should be and tells them
+        their current balance. Passed to the withdraw method if an int is
+        entered.
+
+        Returns
+        -------
+        take_out : int.
+
+        '''
+        
         funds_available = False
         while funds_available == False:
             try:
                 take_out = (int(input(f"How much would you like to bet? You available balance is ${self.balance}:  ")))
             except ValueError:
-                    print("Sorry, You need to enter a number")
+                print("Sorry, You need to enter a number")
             else:
                 if self.withdraw(take_out):
                     funds_available = True
                     return take_out
-                    break
                 else:
                     pass
 
     def nat_21(self):
+        '''
+        This checks if the hand value is a 21 or bust.
+
+        Returns
+        -------
+        Returns Boolean or in a rare case a string, which is not passed to any
+        arguments.
+
+        '''
+        
         
         do_nothing = 'do nothing'
         
@@ -234,63 +306,74 @@ class Player(Account):
 
         
 class Dealer(Player):
+    '''
+    Dealer class inherits from player class. This allows for slightly 
+    different methods to account for modified dealer behavior.
+    
+    '''
+    
     
     def __init__(self, name, balance):
+        Player.__init__(self, name, balance)
         self.balance = balance
         self.name = name
         
         self.cards_in_hand = []
         
     def __str__(self):
-        
+        '''
+        Current players hand (suit and rank) and account balance.
+
+        Returns
+        -------
+        str
+            
+        '''
         return f"{self.see_hand()} \nRemaining Balance: ${self.balance}."
     
 
     def dealer_opening_hand(self): #needs to be printed
-                    
-            return 'Dealers Opening Hand: \n' + str(self.cards_in_hand[0]) + ' and a [Hidden Card]' + '\n'
+        '''
+        Returns the dealers opening hand with one card hidden
+        '''         
+
+           
+        return '\nDealers Opening Hand: \n' + str(self.cards_in_hand[0]) + ' and a [Hidden Card]' + '\n'
 
 
-    def ace_choice(self): #need to figure out how to get this to interact with the aces in hand, not for everyone
-        new_ace_value = 0
-    
-        if self.hand_value() >= 17 and self.hand_value() < 22:
-            new_ace_value = 11
-        else:
-            new_ace_value = 1          
-                
-        return new_ace_value
-
-#build dealer turn into method of dealer class
 
 
-################Game Functions################
+
+
+################GAME Functions################
 
 def replay():
+    '''
+    Asks if the player would like to play again.
+    Returns
+    -------
+    TYPE
+        Boolean.
+
+    '''
     
     return input('Do you want to play another round? Enter Yes or No: ').strip().lower().startswith('y')
 
 def hit_stay():
+    '''
+    Asks if the player would like another card.
+    Returns
+    -------
+    TYPE
+        Boolean.
+
+    '''
+    
     
     return input('Do you want another card? Enter Yes or No: ').strip().lower().startswith('y')
 
 
 
-
-
-
-#####TODO######
-
-#way to check if a hand has an ace, and then run ace_choice
-#have ace_choice update the ace value in the hand as needed
-#can play up to X rounds before needing to re-start the deck?
-
-
-
-####TESTING BLOC#####
-
-
-###END TESTING BLOCK######
 
 ######GAME LOGIC######
 
@@ -298,99 +381,100 @@ def hit_stay():
 
 
 
-###Game Logic
-game = True
-while game == True:
+###GAME Logic
+GAME = True
+while GAME == True:
     ####GAME SET UP#######
 
-    round_on = True
-    choice = True
-    dealers_turn = True
-    my_turn = True
+    ROUND_ON = True
+    CHOICE = True
+    DEALERS_TURN = True
+    MY_TURN = True
 
-    game_deck = Deck()
-    game_deck.shuffle()
+    GAME_DECK = Deck()
+    GAME_DECK.shuffle()
 
-    dealer_player = Dealer('Dealer', 1000000000)
-    human_player = Player('Joe', 1000)
+    DEALER_PLAYER = Dealer('Dealer', 1000000000)
+    HUMAN_PLAYER = Player('Joe', 1000)
 
-    while round_on: #this is the while loop for each round
-        dealers_turn = True
-        my_turn = True
+    while ROUND_ON: #this is the while loop for each round
+        DEALERS_TURN = True
+        MY_TURN = True
 
-        while my_turn:
-            bet_amount = human_player.make_bet() #Player makes bet
+        while MY_TURN:
+            BET_AMOUNT = HUMAN_PLAYER.make_bet() #Player makes bet
             for x in range(2): #Initial Cards Dealt
-                human_player.add_cards(game_deck.deal_one())
-                dealer_player.add_cards(game_deck.deal_one())
+                HUMAN_PLAYER.add_cards(GAME_DECK.deal_one())
+                DEALER_PLAYER.add_cards(GAME_DECK.deal_one())
             #show hands
-            print(dealer_player.dealer_opening_hand())
-            print(human_player.see_hand())
-            if human_player.nat_21() == True: #checks if the player won on the draw
-                human_player.deposit(bet_amount*2)    
-                dealers_turn = False #so you don't end up with the dealer going
+            print(DEALER_PLAYER.dealer_opening_hand())
+            print(HUMAN_PLAYER.see_hand())
+            if HUMAN_PLAYER.nat_21() == True: #checks if the player won on the draw
+                HUMAN_PLAYER.deposit(BET_AMOUNT*2)    
+                DEALERS_TURN = False #so you don't end up with the dealer going
                 break
             else: #if player doesn't win on the deal, they can choose to hit or stay
-                while choice:
+                while CHOICE:
                     #ask if they want another card
                     #run ace check and ask if high or low
-                    ask_player = hit_stay() #if true they want another card
-                    if ask_player == True:
-                        human_player.add_cards(game_deck.deal_one()) #deal one card   
-                        print(human_player.see_hand()) #show new hand
+                    ASK_PLAYER = hit_stay() #if true they want another card
+                    if ASK_PLAYER == True:
+                        HUMAN_PLAYER.add_cards(GAME_DECK.deal_one()) #deal one card   
+                        print(HUMAN_PLAYER.see_hand()) #show new hand
                         #check for ace? and ask if high or low
-                        win_check = human_player.nat_21()
-                        if win_check == True:
-                           human_player.deposit(bet_amount*2)
-                           my_turn = False
-                           dealers_turn = False
-                           break
-                        elif win_check == False:
+                        WIN_CHECK = HUMAN_PLAYER.nat_21()
+                        if WIN_CHECK == True:
+                            HUMAN_PLAYER.deposit(BET_AMOUNT*2)
+                            MY_TURN = False
+                            DEALERS_TURN = False
+                            break
+                        elif WIN_CHECK == False:
                             #go to dealers turn
-                            my_turn = False
-                            dealers_turn = False
+                            MY_TURN = False
+                            DEALERS_TURN = False
                             break
                         else: #starts loop over if they didn't win or bust but asked for at least one additional card
                             pass
                     else: #this else is if the player doesn't want another card
-                        my_turn = False
+                        MY_TURN = False
                         break
                         
-        while dealers_turn:
+        while DEALERS_TURN:
             print('you made it')
-            print(dealer_player.see_hand())
-            while dealer_player.hand_value() < 17:
+            print(DEALER_PLAYER.see_hand())
+            while DEALER_PLAYER.hand_value() < 17:
                 #they will take another card
-                dealer_player.add_cards(game_deck.deal_one())
-                print(dealer_player.see_hand())
-            if dealer_player.hand_value() == 21:
+                DEALER_PLAYER.add_cards(GAME_DECK.deal_one())
+                print(DEALER_PLAYER.see_hand())
+            if DEALER_PLAYER.hand_value() == 21:
                 #dealer wins
                 print('Dealer Wins with a 21\n')
-            elif dealer_player.hand_value() > 21:
+            elif DEALER_PLAYER.hand_value() > 21:
                 #player wins
                 print('Dealer Busted. You Win!\n')
-                human_player.deposit(bet_amount*2)
-            elif dealer_player.hand_value() > human_player.hand_value():
+                HUMAN_PLAYER.deposit(BET_AMOUNT*2)
+            elif DEALER_PLAYER.hand_value() > HUMAN_PLAYER.hand_value():
                 #dealer wins
                 print('Dealer Wins: Closer hand to 21\n')
             else:
                 #player wins
                 print('You were closer to 21. You win!\n')
-                human_player.deposit(bet_amount*2)
+                HUMAN_PLAYER.deposit(BET_AMOUNT*2)
             break
             
-        play_more = replay()
-        if play_more == True: #asks if the player wants to go again
+        PLAY_MORE = replay()
+        if PLAY_MORE == True: #asks if the player wants to go again
              #removes the cards in players hands
-            for card in human_player.cards_in_hand[:]:
-                human_player.remove_one()
-            for card in dealer_player.cards_in_hand[:]:
-                dealer_player.remove_one()
-            game_deck.shuffle()
-            round_on = True
-            my_turn = True
-            dealers_turn = True
-        elif play_more == False:
-            game = False
-            round_on = False
+            for card in HUMAN_PLAYER.cards_in_hand[:]:
+                HUMAN_PLAYER.remove_one()
+            for card in DEALER_PLAYER.cards_in_hand[:]:
+                DEALER_PLAYER.remove_one()
+            GAME_DECK = Deck()
+            GAME_DECK.shuffle()
+            ROUND_ON = True
+            MY_TURN = True
+            DEALERS_TURN = True
+        elif PLAY_MORE == False:
+            GAME = False
+            ROUND_ON = False
             break
