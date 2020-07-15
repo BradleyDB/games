@@ -21,15 +21,13 @@ def ent_counts(document):
 
 pos_type = ['ADJ','NOUN','VERB','ADV']
 
-
-
 #removes a random item from one of the pos lists
 def my_pos_to_remove(pos_type):
     ##Gets Initial List of pos_ for each token in the text##
     pos_type_list_start = []
     for token in doc:
         if token.pos_ == str(pos_type) and token.lemma_ != '-PRON-':
-            pos_type_list_start.append((token.text, token.pos_, spacy.explain(token.tag_)))
+            pos_type_list_start.append((token.text, token.tag_, spacy.explain(token.tag_))) #test replacing token.pos_ with token.tag_
     pos_list = pos_type_list_start    
     ##Counts the number of each token with given pos_ in the text##
     words_to_kill = []        
@@ -40,21 +38,25 @@ def my_pos_to_remove(pos_type):
         result = math.floor(counter/4) #gets the floor of .25 of the amount in the doc
     ##If there are any tokens with the given pos_, some are randomly added to a list to be replaced##
     if result > 0:
-        look_for = random.sample(pos_list,k=result)
-        index = 0
+        new_pos_list = []
+        for items in pos_list:
+            if items[0].lower() not in pos_list:
+                new_pos_list.append((items[0].lower(),items[1],items[2]))
+        look_for = random.sample(set(new_pos_list),k=result)
         for item in look_for:
             #adds the random word to a pattern
-            pattern1 = [{'LOWER': item[0].lower()}]
+            pattern1 = [{'LOWER': item[0].lower(),'TAG': item[1]}] 
             #adds pattern to matcher
             matcher.add('my_search',None,pattern1)
             found_match = matcher(doc)
             ##this grabs the info from the match object so the span, pos_ and text are added to a list##
+            place = 0
             for match_id, start, end in found_match:
                 string_id = nlp.vocab.strings[match_id]  # get string representation
                 span = doc[start:end]                    # get the matched span
-            if look_for[index][0] not in words_to_kill: #only adds to the list if it is not there already
-                words_to_kill.append((found_match[0][1:],item[2],look_for[index][0])) #look_for[index][0] for the word itself
-            index += 1
+            if found_match[place][1:][0] not in words_to_kill: #only adds to the list if it is not there already
+                words_to_kill.append((found_match[place][1:],item[2],span.text)) #look_for[index][0] for the word itself
+                place += 1
             matcher.remove('my_search') #remove pattern so it doesn't remain in matcher and boggle results
     return words_to_kill
 
@@ -63,15 +65,18 @@ def change_it(pos_to_replace_results):
     for new_list in pos_to_replace_results:        
         for item in new_list:
             place,pos,text = item
-            replacement_input = input(f"Please enter a {pos}: ")
+            replacement_input = input(f"Please enter a(n) {pos}: ")
             new_text[int(place[0])] = replacement_input
     return new_text
+
+
+
 
 #####GAME LOGIC#####
 
 playing = True
 while True:
-
+    #Ask for text
     source_text = input(u"Paste in the text you would like to Madlib-ize: ")  #accept either typed string, text from clipboard, or txt file. can be later  
     
     doc = nlp(source_text)
@@ -79,23 +84,15 @@ while True:
     #this is to enable word replacement at an index position equivalent to the token span
     new_text = [token.text for token in doc]
     
-    #run this group
+    words_to_replace = list(map(my_pos_to_remove,pos_type))
     
-    adj_to_replace = list(map(my_pos_to_remove,pos_type))
-        
-    ####END GROUP####
+    end_text = change_it(words_to_replace) 
     
-    end_text = change_it(adj_to_replace)
-        
-    
-    #end_display = change_it(adj_to_replace)
-    
-        
     print('\n') 
     print(' '.join(end_text))
     print('\n')    
     print('\n')
-    
+        
     new_game = input("Would you like to make another? Enter 'Yes' or 'No' ")
     if new_game[0].lower()=='y':
         playing=True
