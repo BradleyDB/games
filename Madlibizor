@@ -1,28 +1,46 @@
 # -*- coding: utf-8 -*-
 """
 Created on Sun Jul 12 18:19:35 2020
-
+This a fun Madlib style game, that takes in plain text
+and removes a proportion of adjectives, nouns, verbs, and adverbs.
+Then you're asked to provide a replacement for those terms and the
+results are printed to you!
 @author: bradl
 """
 
-import spacy
 import random
 import math
+import spacy
 from spacy.matcher import Matcher
 nlp = spacy.load('en_core_web_lg')
 matcher = Matcher(nlp.vocab)
 
-def ent_counts(document):
-    counter = 0
-    for ent in document.ents:
-        counter += 1
-    result = math.floor(counter/4)
-    return result
-
-pos_type = ['ADJ','NOUN','VERB','ADV']
+#these are the pos_ type tags that will be looked for in the text.
+#adding others may result in unexpected behavior
+pos_type = ['ADJ', 'NOUN', 'VERB', 'ADV']  
 
 #removes a random item from one of the pos lists
 def my_pos_to_remove(pos_type):
+    '''
+    This function is written to be used with a map function.
+    This function computes the following:
+        1) Creates a list of all the tokens of the given part of speech.
+        Adds the token.text,token.tag_ and detailed explanation to a list.
+        2) Calculates the total number of the pos and takes the floor of one quarter of the results
+        3) Creates a random list of words to remove. Amount is based on the result from #2 above.
+        4) Searches for the items in the text and adds to the words to a master removal list
+        5) Removes pattern for the next loop
+
+    Parameters
+    ----------
+    pos_type : String. This is the part of speech (token.pos_) you are replacing 
+
+    Returns
+    -------
+    words_to_kill : This returns a list of words that will be replaced:
+    (position,'part_of_speech', text)
+
+    '''
     ##Gets Initial List of pos_ for each token in the text##
     pos_type_list_start = []
     for token in doc:
@@ -41,30 +59,44 @@ def my_pos_to_remove(pos_type):
         new_pos_list = []
         for items in pos_list:
             if items[0].lower() not in pos_list:
-                new_pos_list.append((items[0].lower(),items[1],items[2]))
-        look_for = random.sample(set(new_pos_list),k=result)
+                new_pos_list.append((items[0].lower(), items[1], items[2]))
+        look_for = random.sample(set(new_pos_list), k=result)
         for item in look_for:
             #adds the random word to a pattern
-            pattern1 = [{'LOWER': item[0].lower(),'TAG': item[1]}] 
+            pattern1 = [{'LOWER': item[0].lower(), 'TAG': item[1]}] 
             #adds pattern to matcher
-            matcher.add('my_search',None,pattern1)
+            matcher.add('my_search', None, pattern1)
             found_match = matcher(doc)
             ##this grabs the info from the match object so the span, pos_ and text are added to a list##
             place = 0
             for match_id, start, end in found_match:
-                string_id = nlp.vocab.strings[match_id]  # get string representation
+                #string_id = nlp.vocab.strings[match_id]  # get string representation
                 span = doc[start:end]                    # get the matched span
             if found_match[place][1:][0] not in words_to_kill: #only adds to the list if it is not there already
-                words_to_kill.append((found_match[place][1:],item[2],span.text)) #look_for[index][0] for the word itself
+                words_to_kill.append((found_match[place][1:], item[2], span.text)) #look_for[index][0] for the word itself
                 place += 1
             matcher.remove('my_search') #remove pattern so it doesn't remain in matcher and boggle results
     return words_to_kill
 
 
 def change_it(pos_to_replace_results):
+    '''
+    This takes a list of the results from the previous function, which is a list of tuples.
+    Takes this list, and asks the user for a part of speech, and uses
+    the input to replace a word in that position.
+
+    Parameters
+    ----------
+    pos_to_replace_results : List of tuples from the previous function
+
+    Returns
+    -------
+    new_text : Returns a list of each "token" in the text
+
+    '''
     for new_list in pos_to_replace_results:        
         for item in new_list:
-            place,pos,text = item
+            place, pos, text = item
             replacement_input = input(f"Please enter a(n) {pos}: ")
             new_text[int(place[0])] = replacement_input
     return new_text
@@ -84,7 +116,7 @@ while True:
     #this is to enable word replacement at an index position equivalent to the token span
     new_text = [token.text for token in doc]
     
-    words_to_replace = list(map(my_pos_to_remove,pos_type))
+    words_to_replace = list(map(my_pos_to_remove, pos_type))
     
     end_text = change_it(words_to_replace) 
     
@@ -94,9 +126,8 @@ while True:
     print('\n')
         
     new_game = input("Would you like to make another? Enter 'Yes' or 'No' ")
-    if new_game[0].lower()=='y':
-        playing=True
-        continue
+    if new_game[0].lower() == 'y':
+        playing = True
     else:
         print("Thanks for playing!")
         break
