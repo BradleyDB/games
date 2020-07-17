@@ -5,6 +5,10 @@ This a fun Madlib style game, that takes in plain text
 and removes a proportion of adjectives, nouns, verbs, and adverbs.
 Then you're asked to provide a replacement for those terms and the
 results are printed to you!
+Note: Even after importing spacy, you will need to download a
+spacy english vocabulary for this to run. The large library is
+used here, but either of the smaller libraries could work.
+
 @author: bradl
 """
 
