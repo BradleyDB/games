@@ -1,0 +1,50 @@
+import random
+
+def num_and_pos_good(player,computer):
+    counter = 0
+    for i, num in enumerate(player):
+        if num in computer:
+            if player[i] == computer[i]:
+                counter += 1
+    return counter
+
+def num_good(player,computer):
+    counter = 0
+    for i, num in enumerate(player):
+        if player[i] in computer:
+            counter += 1
+    return counter
+
+
+incorrect = True
+digits = list(range(10))
+computer_guess = random.sample(digits,3)
+#print(computer_guess) #just in case you want to play around with guesses
+intro = '''Welcome! Can You Crack the Code and guess the Computers 3 digit code?
+As you guess the computer will give you clues, the possible clues are:
+
+    Close: You've guessed a correct number but in the wrong position
+    Match: You've guessed a correct number in the correct position
+    Nope: You haven't guess any of the numbers correctly'''
+print(intro.center(15)+'\n')
+while incorrect == True:
+    bad_input = True
+    while bad_input == True:
+        guess = input("What is your guess? ")
+        try:
+            my_guess = [int(num) for num in guess]
+            if len(my_guess) != 3:
+                print('You must enter 3 digits')
+            else:
+                break
+        except:
+            print('Please enter a valid 3 digit number')
+    if my_guess == computer_guess:
+        print('Correct! You Got it!')
+        break
+    elif num_and_pos_good(my_guess,computer_guess) > 0:
+        print("Match: You've guessed a correct number in the correct position")
+    elif num_good(my_guess,computer_guess) > 0:
+        print("Close: You've guessed a correct number but in the wrong position")
+    else:
+        print('No Matches at all')
