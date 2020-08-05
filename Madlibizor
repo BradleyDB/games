@@ -78,6 +78,7 @@ def change_it(pos_to_replace_results,token_list):
     This takes a list of token of the results from the previous function, which is a list of tuples.
     Takes this list, and asks the user for a part of speech, and uses
     the input to replace a word in that position.
+    The parameter token_list is intentionally modified in place.
 
     Parameters
     ----------
@@ -87,7 +88,7 @@ def change_it(pos_to_replace_results,token_list):
 
     Returns
     -------
-    new_text : Returns a list of each "token" in the text
+    token_list : Returns a list of each "token" in the text
 
     '''
     for new_list in pos_to_replace_results:        
@@ -121,8 +122,6 @@ while True:
     print('\n')
         
     new_game = input("Would you like to make another? Enter 'Yes' or 'No' ")
-    if new_game[0].lower() == 'y':
-        continue
-    else:
+    if new_game[0].lower() == 'n':
         print("Thanks for playing!")
         break
