@@ -95,7 +95,7 @@ def change_it(pos_to_replace_results,token_list):
         for item in new_list:
             place, pos, text = item
             replacement_input = input(f"Please enter a(n) {pos}: ")
-            token_list[int(place[0])] = replacement_input
+            token_list[place[0]] = replacement_input
     return token_list
 
 
